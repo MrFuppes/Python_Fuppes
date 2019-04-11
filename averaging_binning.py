@@ -10,6 +10,7 @@ from math import radians, degrees, floor
 from datetime import datetime, date
 
 import numpy as np
+import pandas as pd
 from scipy.interpolate import interp1d
 
 from monotonicity import strictly_increasing
@@ -109,10 +110,17 @@ def moving_avg(v, N):
 ###############################################################################
 
 
-def np_mvg_avg(v, N, ip_ovr_nan=False, mode='same', edges='keep_orig'):
+def np_mvg_avg(v, N, ip_ovr_nan=False, mode='same', edges='expand'):
     """
-    moving average based on convolution
+    moving average based on numpy convolution function.
+        ip_ovr_nan: interpolate linearly using finite elements of v
+        edges='expand': in case of mode='same', convolution gives false results
+                        ("running-in effect") at edges. account for this by
+                        simply expanding the Nth value to the edges.
+    performance: faster by factor of 5-6 compared to pd_mvg_avg.
     """
+    N = int(N)
+
     if ip_ovr_nan:
         x = np.linspace(0, len(v)-1, num=len(v))
         fip = interp1d(x[np.isfinite(v)], v[np.isfinite(v)], kind='linear',
@@ -121,8 +129,35 @@ def np_mvg_avg(v, N, ip_ovr_nan=False, mode='same', edges='keep_orig'):
 
     m_avg = np.convolve(v, np.ones((N,))/N, mode=mode)
 
-    if edges=='keep_orig':
+    if edges=='expand':
         m_avg[:N-1], m_avg[-N-1:] = m_avg[N], m_avg[-N]
+
+    return m_avg
+
+###############################################################################
+
+
+def pd_mvg_avg(v, N, ip_gaps=False, min_periods=1):
+    """
+    moving average for numpy vector using pandas dataframe rolling function.
+        NOTE: automatically skips NaN (forms averages over windows with <N),
+              unless minimum number of values in window is exceeded.
+        min_periods: minimum number of values in averaging window.
+        ip_gaps: interpolate linearly using finite elements of v
+    performance: slower by factor of 5-6 compared to np_mvg_avg.
+    """
+    N, min_periods = int(N), int(min_periods)
+    if min_periods < 1:
+        min_periods = 1
+
+    df = pd.DataFrame({ 'v' : v })
+    df['rollmean'] = df['v'].rolling(int(N), center=True,
+                                     min_periods=min_periods).mean()
+    if ip_gaps:
+        df['ip']  = df['rollmean'].interpolate()
+        m_avg = np.array(df['ip'])
+    else:
+        m_avg = np.array(df['rollmean'])
 
     return m_avg
 
@@ -276,5 +311,13 @@ def bin_yvar(v, bin_info,
                     [outfmt % element for element in binned_var['bin_mean']])
 
     return binned_var
+
+###############################################################################
+
+
+def bin_by_npreduceat(v, nbins):
+    bins = np.linspace(0, len(v), nbins+1, True).astype(np.int)
+    binned_v = np.add.reduceat(v, bins[:-1]) / np.diff(bins)
+    return binned_v
 
 ###############################################################################
