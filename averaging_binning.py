@@ -32,11 +32,14 @@ def mean_day_frac(dfr):
     use the mean_angle function to calculate a mean day fraction (0-1).
     the conversion to angle is neccessary since day changes cannot be
         calculated as arithmetic mean.
+    dfr: day fraction, 0-1
     """
     deg = [element*360 for element in dfr]
-    deg_mean = degrees(phase(sum(rect(1, radians(d)) for d in deg)/len(deg)))
+    deg_mean = mean_angle(deg)
+
     if deg_mean < 0:  # account for mean degree between -180 and +180
         deg_mean += 360
+
     return deg_mean/360
 
 ###############################################################################
