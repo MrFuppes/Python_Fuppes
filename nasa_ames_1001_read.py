@@ -42,6 +42,7 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
         file_path = makePath(file_path)
 
     if not os.path.isfile(file_path): # check if file exists
+        raise FileExistsError(str(file_path) + "\n    does not exist.")
         na_1001 = None # return None if not
     else:
         with open(file_path, "r", encoding="UTF-8") as file_obj:
@@ -84,7 +85,9 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
         nlhead = int((data[0].partition(sep))[0])
         na_1001['NLHEAD'] = nlhead
         na_1001['FFI'] = int((data[0].partition(sep))[-1])
-        # error case: ffi not equal 1001?
+        if na_1001['FFI'] != 1001:
+            raise(ValueError("file format identifier not equal to 1001!"))
+            return None
 
         header = data[0:nlhead]
         data = data[nlhead:]
