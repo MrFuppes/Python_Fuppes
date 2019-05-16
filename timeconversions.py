@@ -31,10 +31,14 @@ def timestring_2_mdns(timestring, tsfmt="%Y-%m-%d %H:%M:%S.%f", ymd=None):
     else:
         dt = datetime.strptime(timestring, tsfmt)
         dt = dt.replace(tzinfo=timezone.utc)
-        if ymd:  # [yyyy,m,d] given, take that as starting point
-            t0 = (datetime(year=ymd[0], month=ymd[1], day=ymd[2],
-                           hour=0, minute=0, second=0, microsecond=0,
-                           tzinfo=timezone.utc))
+        # check if [yyyy,m,d] given, take that as starting point
+        if isinstance(ymd, (np.ndarray, np.generic, list)):
+            if len(ymd) == 3:
+                t0 = (datetime(year=ymd[0], month=ymd[1], day=ymd[2],
+                               hour=0, minute=0, second=0, microsecond=0,
+                               tzinfo=timezone.utc))
+            else:
+                t0 = dt.replace(hour=0, minute=0, second=0, microsecond=0)
         else:  # use date from timestring as starting point
             t0 = dt.replace(hour=0, minute=0, second=0, microsecond=0)
         return (dt - t0).total_seconds()
