@@ -17,12 +17,12 @@ def find_fist_elem(arr, val, condition):
         val: scalar value
         condition: e.g. 'operator.ge' (operator package)
     Returns:
-        (index, value) tuple or None if no match is found.
+        index of value matching the condition or None if no match is found.
     """
-    sel_ix = next((ix for ix, v in np.ndenumerate(arr) if condition(v, val)), None)
-    if sel_ix:
-        return (sel_ix[0], arr[sel_ix[0]])
-    return None
+    if isinstance(arr, list):
+        return next((ix[0] for ix, v in np.ndenumerate(arr) if condition(v, val)), None)
+    result = np.argmax(condition(arr, val))
+    return result if condition(arr[result], val) else None
 
 if __name__ == '__main__':
     # a bit of testing...
