@@ -48,11 +48,9 @@ def get_pddf_from_na1001(file_path,
 
     na_dct = na_r(file_path,
                   sep=sep, sep_data=sep_data, sep_com=sep_com,
-                  auto_nncoml=True,
-                  strip_lines=True,
-                  remove_doubleseps=True,
-                  vscale_vmiss_vertical=False,
-                  vmiss_to_None=True)
+                  vscale_vmiss_vertical=vscale_vmiss_vertical,
+                  auto_nncoml=True, strip_lines=True,
+                  remove_doubleseps=True, vmiss_to_None=True)
 
     keys = na_dct['NCOM'][-1].split(sep_data)
 
