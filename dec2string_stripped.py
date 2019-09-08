@@ -33,6 +33,7 @@ def dec2str_stripped(num, dec_places=3, strip='right'):
         return [f"{n:.{str(dec_places)}f}".strip('0') for n in num]
     raise ValueError(f"kwarg 'strip' must be 'right', 'left' or 'both' (got '{strip}')")
 
+
 if __name__ == '__main__': # a bit of testing...
     # valid
     NUMBERS = [0.010701]

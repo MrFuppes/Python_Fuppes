@@ -1,0 +1,101 @@
+# -*- coding: utf-8 -*-
+r"""
+Created on Mon Jul 22 14:03:27 2019
+
+@author: F. Obersteiner, florian\obersteiner\\kit\edu
+"""
+
+import re
+
+class Num_Str():
+    def analyse_format(self, s, dec_sep='.'):
+        """
+        INPUT: 
+            s, string, representing a number
+        INPUT, optional: 
+            dec_sep, string, decimal separator
+        WHAT IT DOES:
+            1) analyse the string to achieve a general classification
+                (decimal, no decimal, exp notation)
+            2) pass the string and the general class to an appropriate
+                parsing function.
+        RETURNS: 
+            the result of the parsing function:
+                tuple with
+                    format code to be used in '{}.format()'
+                    suited Python type for the number, int or float.
+        """
+
+        # 1. format definitions. key = general classification.
+        redct = {'dec': '[+-]?[0-9]+['+dec_sep+'][0-9]*|[+-]?[0-9]*['+dec_sep+'][0-9]+',
+                 'no_dec': '[+-]?[0-9]+',
+                 'exp_dec': '[+-]?[0-9]+['+dec_sep+'][0-9]*[eE][+-]*[0-9]+',
+                 'exp_no_dec': '[+-]?[0-9]+[eE][+-]*[0-9]+'}
+
+        # 2. analyse the format to find the general classification.
+        gen_class, s = [], s.strip()
+        for k, v in redct.items():
+            test = re.fullmatch(v, s)
+            if test:
+                gen_class.append(k)
+        if not gen_class:
+            raise TypeError("unknown format -->", s)
+        elif len(gen_class) > 1:
+            raise TypeError("ambiguous result -->", s, gen_class)
+
+        # 3. based on the general classification, parse the string
+        method_name = 'parse_' + str(gen_class[0])
+        method = getattr(self, method_name, lambda *args: "Undefined Format!")
+        return method(s, *dec_sep)
+
+    def parse_dec(self, s, dec_sep):
+        lst = s.split(dec_sep)
+        result = '{:f}' if len(lst[1]) == 0 else '{:.'+str(len(lst[1]))+'f}'
+        result = result.replace(':', ':+') if '+' in lst[0] else result
+        return (result, float)
+
+    def parse_no_dec(self, s, *dec_sep):
+        result = '{:+d}' if '+' in s else '{:d}'
+        return (result, int)
+
+    def parse_exp_dec(self, s, dec_sep):
+        lst_dec = s.split(dec_sep)
+        lst_E = lst_dec[1].upper().split('E')
+        result = '{:.'+str(len(lst_E[0]))+'E}'
+        result = result.replace(':', ':+') if '+' in lst_dec[0] else result
+        return (result, float)
+
+    def parse_exp_no_dec(self, s, *dec_sep):
+        lst_E = s.upper().split('E')
+        result = '{:+E}' if '+' in lst_E[0] else '{:E}'
+        return (result, float)
+
+
+### TESTING ###
+if __name__ == '__main__':
+
+    valid = ['45', '45.', '3E5', '4E+5', '3E-3', '2.345E+7', '-7',
+             '-45.3', '-3.4E3', ' 12 ', '8.8E1', '+5.3', '+4.',
+             '+10', '+2.3E121', '+4e-3','-204E-9668','.7','+.7']
+    invalid = ['tesT', 'Test45', '7,7E2', '204-100', '.']
+    
+    for s in valid:
+        result = Num_Str().analyse_format(s)
+        if isinstance(result, tuple):
+            number = result[1](s)
+            string = result[0].format(number)
+            print('input:', s, '| number:', number, '| format:', result[0], '| output:', string)
+        else:
+            print('input:', s, result)
+    
+    
+    for s in invalid:
+        print(s)
+        try:
+            result = Num_Str().analyse_format(s)
+            if isinstance(result, tuple):
+                number = result[1](s)
+                string = result[0].format(number)
+                print('input:', s, 'output:', string)
+        except TypeError:
+            print('TypeError!')

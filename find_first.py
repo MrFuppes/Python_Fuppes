@@ -11,18 +11,18 @@ import numpy as np
 def find_fist_elem(arr, val, condition):
     """
     Find the first element in arr that gives (arr[ix] condition val) == True.
-    Makes use of next function to stop iteration after condition is met.
     Inputs:
-        arr: nummeric numpy 1d array
+        arr: nummeric numpy 1d array or python list
         val: scalar value
         condition: e.g. 'operator.ge' (operator package)
     Returns:
         index of value matching the condition or None if no match is found.
     """
     if isinstance(arr, list):
-        return next((ix[0] for ix, v in np.ndenumerate(arr) if condition(v, val)), None)
+        return next((ix for ix, v in enumerate(arr) if condition(v, val)), None)
     result = np.argmax(condition(arr, val))
     return result if condition(arr[result], val) else None
+
 
 if __name__ == '__main__':
     # a bit of testing...
