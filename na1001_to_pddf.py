@@ -73,6 +73,10 @@ def get_pddf_from_na1001(file_path,
         values = [dt] + values
 
     return pd.DataFrame.from_dict(dict(zip(keys, values)))
+    # slower:
+    # df = pd.DataFrame(values).transpose()
+    # df.columns = keys
+    # return df
 
 if __name__ == '__main__':
     file = 'D:/PROGRAMMING/Python/Python_Testing/TESTDATA/NA_read/valid.txt'

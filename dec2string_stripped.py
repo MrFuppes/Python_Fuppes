@@ -21,10 +21,15 @@ def dec2str_stripped(num, dec_places=3, strip='right'):
     list of string.
         numbers formatted as strings according to specification (see kwargs).
     """
-    if not isinstance(num, list):
-        num = [num]
+    if not isinstance(num, list): # might be scalar or numpy array
+        try:
+            num = list(num)
+        except TypeError: # input was scalar
+            num = [num]
+
     if not isinstance(dec_places, int) or int(dec_places) < 1:
         raise ValueError(f"kwarg dec_places must be integer > 1 (got {dec_places})")
+
     if strip == 'right':
         return [f"{n:.{str(dec_places)}f}".rstrip('0') for n in num]
     if strip == 'left':
