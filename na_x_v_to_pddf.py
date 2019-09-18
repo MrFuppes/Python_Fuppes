@@ -19,7 +19,7 @@ def get_pddf_from_na1001(file_path,
     """
     WHAT?
         wrapper for nasa_ames_1001_read() that just returns a pandas DataFrame
-    ASSUMES:
+    ASSUMES: 
         last line of NCOM contains names of parameters (delimited by sep_data)
 
     Parameters
@@ -48,9 +48,11 @@ def get_pddf_from_na1001(file_path,
 
     na_dct = na_r(file_path,
                   sep=sep, sep_data=sep_data, sep_com=sep_com,
-                  vscale_vmiss_vertical=vscale_vmiss_vertical,
-                  auto_nncoml=True, strip_lines=True,
-                  remove_doubleseps=True, vmiss_to_None=True)
+                  auto_nncoml=True,
+                  strip_lines=True,
+                  remove_doubleseps=True,
+                  vscale_vmiss_vertical=False,
+                  vmiss_to_None=True)
 
     keys = na_dct['NCOM'][-1].split(sep_data)
 
@@ -73,13 +75,8 @@ def get_pddf_from_na1001(file_path,
         values = [dt] + values
 
     return pd.DataFrame.from_dict(dict(zip(keys, values)))
-    # slower:
-    # df = pd.DataFrame(values).transpose()
-    # df.columns = keys
-    # return df
 
 if __name__ == '__main__':
     file = 'D:/PROGRAMMING/Python/Python_Testing/TESTDATA/NA_read/valid.txt'
-    # file = 'D:/KIT/Dataprocessing_Caribic/MS_files/output/MS_20171211_537_MUC_ICN_10s_V06.txt'
     df = get_pddf_from_na1001(file, add_datetime=True)
     print(df.info())

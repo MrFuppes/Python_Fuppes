@@ -32,7 +32,7 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
                                      lines (1 entry per line) instead of in one
                                      line each (e.g. for DLR Bahamas files)
         vmiss_to_None: set True if missing values should be replaced with None.
-                        
+
     returns:
         na_1001: dictionary with keys according to NASA AMES 1001 file
                  specification

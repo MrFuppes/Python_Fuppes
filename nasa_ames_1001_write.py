@@ -7,7 +7,6 @@ Created on Tue Feb 13 15:17:08 2018
 more info on NASA AMES file format:
     https://espoarchive.nasa.gov/content/Ames_Format_Specification_v20
 """
-# missing: check strings / list of strings that each string is terminated correctly
 
 import os
 
