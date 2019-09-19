@@ -19,7 +19,7 @@ def get_pddf_from_na1001(file_path,
     """
     WHAT?
         wrapper for nasa_ames_1001_read() that just returns a pandas DataFrame
-    ASSUMES: 
+    ASSUMES:
         last line of NCOM contains names of parameters (delimited by sep_data)
 
     Parameters
@@ -50,11 +50,11 @@ def get_pddf_from_na1001(file_path,
                   sep=sep, sep_data=sep_data, sep_com=sep_com,
                   auto_nncoml=True,
                   strip_lines=True,
-                  remove_doubleseps=True,
                   vscale_vmiss_vertical=False,
                   vmiss_to_None=True)
 
-    keys = na_dct['NCOM'][-1].split(sep_data)
+    # keys = na_dct['NCOM'][-1].split(sep_data)
+    keys = [n.split()[0] for n in na_dct['VNAME']]
 
     # converting to np.array before conversion to pd.df is more efficient:
     values = [np.array(na_dct['X'], dtype=dtype)]
@@ -77,6 +77,7 @@ def get_pddf_from_na1001(file_path,
     return pd.DataFrame.from_dict(dict(zip(keys, values)))
 
 if __name__ == '__main__':
-    file = 'D:/PROGRAMMING/Python/Python_Testing/TESTDATA/NA_read/valid.txt'
-    df = get_pddf_from_na1001(file, add_datetime=True)
+    file_path = 'D:/PROGRAMMING/Python/Python_Testing/TESTDATA/NA_read/valid.txt'
+    file_path = 'D:/PROGRAMMING/Python/Python_Testing/TESTDATA/NA_read/WISE_01_20170831_GhOST_MS_V6.Ames'
+    df = get_pddf_from_na1001(file_path, sep_com='\t')
     print(df.info())
