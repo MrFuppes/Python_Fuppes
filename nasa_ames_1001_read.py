@@ -9,6 +9,7 @@ more info on NASA AMES file format:
 """
 import os
 from pathlib import Path as makePath
+from datetime import date
 
 def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
                         auto_nncoml=True, strip_lines=True,
@@ -81,11 +82,13 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
                    'X': None,
                    'V': None}
 
-        nlhead = int((data[0].partition(sep))[0])
+        tmp = list(map(int, data[0].split()))
+        assert len(tmp) == 2, f"invalid format in {data[0]} (line 1)"
+        assert tmp[1] == 1001, f"invalid FFI in {data[0]} (line 1)"
+
+        nlhead = tmp[0]
         na_1001['NLHEAD'] = nlhead
-        na_1001['FFI'] = int((data[0].partition(sep))[-1])
-        if na_1001['FFI'] != 1001:
-            raise ValueError("file format identifier != 1001")
+        na_1001['FFI'] = tmp[1]
 
         header = data[0:nlhead]
         data = data[nlhead:]
@@ -98,11 +101,15 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
         na_1001['SNAME'] = header[3]
         na_1001['MNAME'] = header[4]
 
-        na_1001['IVOL'] = int((header[5].partition(sep))[0])
-        na_1001['NVOL'] = int((header[5].partition(sep))[2])
+        tmp = list(map(int, header[5].split()))
+        assert len(tmp) ==2, f"invalid format {header[5]} (line 6)"
+        na_1001['IVOL'], na_1001['NVOL'] = tmp[0], tmp[1]
 
-        na_1001['DATE'] = list(map(int, (header[6].rsplit(sep=sep))[0:3]))
-        na_1001['RDATE'] = list(map(int, (header[6].rsplit(sep=sep))[3:6]))
+        tmp = list(map(int, header[6].split()))
+        assert len(tmp) == 6, f"invalid format {header[6]} (line 7)"
+        # check for valid date in line 7 (yyyy mm dd)
+        date(*tmp[0:3]), date(*tmp[3:6])
+        na_1001['DATE'], na_1001['RDATE'] = tmp[0:3], tmp[3:6]
 
         na_1001['DX'] = float(header[7]) # dx=0 means non-uniform independent variable.
         na_1001['XNAME'] = header[8].rsplit(sep=sep_com)
@@ -117,8 +124,8 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
             na_1001['VMISS'] = header[10+n_vars:10+n_vars*2]
         else:
             offset = 2
-            na_1001['VSCAL'] = header[10].rsplit(sep=sep)
-            na_1001['VMISS'] = header[11].rsplit(sep=sep)
+            na_1001['VSCAL'] = header[10].split()
+            na_1001['VMISS'] = header[11].split()
         # test case:
         msg = "vscal, vmiss and vname must have equal number of elements"
         assert n_vars == len(na_1001['VSCAL']) == len(na_1001['VMISS']), msg
