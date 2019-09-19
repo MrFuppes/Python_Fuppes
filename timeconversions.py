@@ -19,30 +19,23 @@ def timestring_2_mdns(timestring,
     ISO-8601 date string format: '%Y-%m-%dT%H:%M:%S%z'.
     ymd: define starting data as list of integers; [year, month, day]
     """
-    if isinstance(timestring, (list, np.ndarray)):
-        dt = [datetime.strptime(s, tsfmt) for s in timestring]
-        dt = [s.replace(tzinfo=timezone.utc) for s in dt]
-        if ymd:  # [yyyy,m,d] given, take that as starting point
-            t0 = (datetime(year=ymd[0], month=ymd[1], day=ymd[2],
-                           hour=0, minute=0, second=0, microsecond=0,
-                           tzinfo=timezone.utc))
-        else:  # use date from timestring as starting point
-            t0 = dt[0].replace(hour=0, minute=0, second=0, microsecond=0)
-        return ([(s - t0).total_seconds() for s in dt])
-    else:
-        dt = datetime.strptime(timestring, tsfmt)
-        dt = dt.replace(tzinfo=timezone.utc)
-        # check if [yyyy,m,d] given, take that as starting point
-        if isinstance(ymd, (list, np.ndarray)):
-            if len(ymd) == 3:
-                t0 = (datetime(year=ymd[0], month=ymd[1], day=ymd[2],
-                               hour=0, minute=0, second=0, microsecond=0,
-                               tzinfo=timezone.utc))
-            else:
-                t0 = dt.replace(hour=0, minute=0, second=0, microsecond=0)
-        else:  # use date from timestring as starting point
-            t0 = dt.replace(hour=0, minute=0, second=0, microsecond=0)
-        return (dt - t0).total_seconds()
+    ret_scalar = False
+    if not isinstance(timestring, (list, np.ndarray)):
+        timestring = [timestring]
+        ret_scalar = True
+
+    dt = [datetime.strptime(s, tsfmt) for s in timestring]
+    dt = [s.replace(tzinfo=timezone.utc) for s in dt]
+    if ymd:  # [yyyy,m,d] given, take that as starting point
+        t0 = (datetime(year=ymd[0], month=ymd[1], day=ymd[2],
+                       hour=0, minute=0, second=0, microsecond=0,
+                       tzinfo=timezone.utc))
+    else:  # use date from timestring as starting point
+        t0 = dt[0].replace(hour=0, minute=0, second=0, microsecond=0)
+
+    mdns = [(s - t0).total_seconds() for s in dt]
+
+    return mdns[0] if ret_scalar else mdns
 
 
 ###############################################################################
@@ -72,10 +65,7 @@ def datetimeobj_2_mdns(dt_obj,
             result = ([(x-x.replace(hour=0, minute=0, second=0, microsecond=0))
                        .total_seconds() for x in dt_obj])
         return result
-    else:
-        return ((dt_obj -
-                 dt_obj.replace(hour=0, minute=0, second=0, microsecond=0))
-                .total_seconds())
+    return ((dt_obj - dt_obj.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
 
 
 ###############################################################################
@@ -89,23 +79,26 @@ def posixts_2_mdns(posixts,
     ymd: define starting data as list of integers; [year, month, day]
     (!) input variable must be a UTC timestamp
     """
+    ret_scalar = False
+    if not isinstance(posixts, (list, np.ndarray)):
+        try:
+            posixts = list(posixts)
+        except TypeError:
+            posixts = [posixts]
+        ret_scalar = True
+
     if ymd:  # [yyyy,m,d] given, take that as starting point
         t0 = (datetime(year=ymd[0], month=ymd[1], day=ymd[2],
                        hour=0, minute=0, second=0, microsecond=0,
                        tzinfo=timezone.utc))
 
-    if isinstance(posixts, (list, np.ndarray)):
-        dt_obj = [datetime.utcfromtimestamp(ts) for ts in posixts]
-        dt_obj = [d.replace(tzinfo=timezone.utc) for d in dt_obj]
-        if not ymd: # take date of first entry as starting point
-            t0 = dt_obj[0].replace(hour=0, minute=0, second=0, microsecond=0)
-        return [(s - t0).total_seconds() for s in dt_obj]
-    else:
-        dt_obj = datetime.utcfromtimestamp(posixts)
-        dt_obj = dt_obj.replace(tzinfo=timezone.utc)
-        if not ymd:
-            t0 = dt_obj.replace(hour=0, minute=0, second=0, microsecond=0)
-        return (dt_obj - t0).total_seconds()
+    dt_obj = [datetime.utcfromtimestamp(ts) for ts in posixts]
+    dt_obj = [d.replace(tzinfo=timezone.utc) for d in dt_obj]
+    if not ymd: # take date of first entry as starting point
+        t0 = dt_obj[0].replace(hour=0, minute=0, second=0, microsecond=0)
+    ts = [(s - t0).total_seconds() for s in dt_obj]
+
+    return ts[0] if ret_scalar else ts
 
 
 ###############################################################################
@@ -125,57 +118,45 @@ def mdns_2_datetimeobj(mdns,
     STR_FMT: if provided, output is delivered as formatted string. POSIX must
         be False in that case, otherwise STR_FMT is overridden (evaluated last).
     """
-    if isinstance(mdns, (list, np.ndarray)):
-        if not isinstance(mdns[0], (float, np.float32, np.float64)):
-            mdns = list(map(float, mdns))
-        date_zero = datetime(year=year, month=month, day=day,
-                             tzinfo=timezone.utc)
-        pytimest = []
-        for t in mdns:
-            if t/86400 > 1:
-                days_off = int(t/86400)
-                pytimest.append(date_zero + timedelta(days=days_off,
-                                                      seconds=t-86400*days_off))
-            else:
-                pytimest.append(date_zero + timedelta(seconds=t))
+    ret_scalar = False
+    if not isinstance(mdns, (list, np.ndarray)):
+        try:
+            mdns = list(mdns)
+        except TypeError:
+            mdns = [mdns]
+        ret_scalar = True
 
-        pytimest = [p.replace(tzinfo=timezone.utc) for p in pytimest]
+    if not isinstance(mdns[0], (float, np.float32, np.float64)):
+        mdns = list(map(float, mdns))
 
-        if posix:
-            pytimest = [x.timestamp() for x in pytimest]
-        elif str_fmt:
-            if "%f" in str_fmt:
-                pytimest = [x.strftime(str_fmt)[:-3] for x in pytimest]
-            else:
-                pytimest = [x.strftime(str_fmt) for x in pytimest]
-
-    else:
-        if mdns/86400 > 1:
-            days_off = int(mdns/86400)
-            pytimest = (datetime(year=year, month=month, day=day) +
-                        timedelta(days=int(mdns/86400), seconds=mdns-86400*days_off))
+    date_zero = datetime(year=year, month=month, day=day,
+                         tzinfo=timezone.utc)
+    pytimest = []
+    for t in mdns:
+        if t/86400 > 1:
+            days_off = int(t/86400)
+            pytimest.append(date_zero + timedelta(days=days_off,
+                                                  seconds=t-86400*days_off))
         else:
-            pytimest = (datetime(year=year, month=month, day=day) +
-                        timedelta(seconds=mdns))
+            pytimest.append(date_zero + timedelta(seconds=t))
 
-        pytimest = pytimest.replace(tzinfo=timezone.utc)
+    pytimest = [p.replace(tzinfo=timezone.utc) for p in pytimest]
 
-        if posix:
-            pytimest = pytimest.timestamp()
-        elif str_fmt:
-            if "%f" in str_fmt:
-                pytimest = pytimest.strftime(str_fmt)[:-3]
-            else:
-                pytimest = pytimest.strftime(str_fmt)
+    if posix:
+        pytimest = [x.timestamp() for x in pytimest]
+    elif str_fmt:
+        if "%f" in str_fmt:
+            pytimest = [x.strftime(str_fmt)[:-3] for x in pytimest]
+        else:
+            pytimest = [x.strftime(str_fmt) for x in pytimest]
 
-    return pytimest
+    return pytimest[0] if ret_scalar else pytimest
 
 
 ###############################################################################
 
 
-def daysSince_2_dtObj(daysSince: float,
-                      day0, tz=timezone.utc):
+def daysSince_2_dtObj(daysSince, day0, tz=timezone.utc):
     """
     convert a floating point number "daysSince" to a datetime object.
     day0: datetime object, from when to count.
@@ -184,12 +165,8 @@ def daysSince_2_dtObj(daysSince: float,
         day0 = day0.replace(tzinfo=tz)
 
     if isinstance(daysSince, (list, np.ndarray)):
-        result = [(day0 + timedelta(days=ds)).replace(tzinfo=tz)
-                  for ds in daysSince]
-    else:
-        result = (day0 + timedelta(days=daysSince)).replace(tzinfo=tz)
-
-    return result
+        return [(day0 + timedelta(days=ds)).replace(tzinfo=tz) for ds in daysSince]
+    return (day0 + timedelta(days=daysSince)).replace(tzinfo=tz)
 
 
 ###############################################################################
