@@ -10,7 +10,8 @@ import os
 
 def txt_2_dict_simple(file, sep=';', colhdr_ix=0, to_float=False,
                       ignore_repeated_sep=False, ignore_colhdr=False,
-                      keys_upper=False, preserve_empty=True):
+                      keys_upper=False, preserve_empty=True,
+                      skip_empty_lines=False):
     """
     requires input: txt file with column header and values separated by a
         specific separator (delimiter).
@@ -40,12 +41,11 @@ def txt_2_dict_simple(file, sep=';', colhdr_ix=0, to_float=False,
         result['file_hdr'] = [l.strip() for l in content[:colhdr_ix]]
 
     col_hdr = content[colhdr_ix].strip().rsplit(sep)
+    if ignore_repeated_sep:
+        col_hdr = [s for s in col_hdr if s != '']
     if ignore_colhdr:
         for i, _ in enumerate(col_hdr):
             col_hdr[i] = f"col_{(i+1):03d}"
-
-    if ignore_repeated_sep:
-        col_hdr = [s for s in col_hdr if s != '']
 
     if keys_upper:
         col_hdr = [s.upper() for s in col_hdr]
@@ -54,19 +54,22 @@ def txt_2_dict_simple(file, sep=';', colhdr_ix=0, to_float=False,
         result['data'][element] = []
 
     # cut col header...
-    content = content[1+colhdr_ix:] # implies file must have a col header
+    colhdr_ix -= 1 if ignore_colhdr else colhdr_ix
+    content = content[1+colhdr_ix:]
     for line in content:
         if preserve_empty: # only remove linefeed (if first field is empty)
             line = line[:-1] if '\n' in line else line
         else:
             line = line.strip()  # remove surrounding whitespaces
+        if skip_empty_lines:
+            if line == '': # skip empty lines
+                continue
 
         line = line.rsplit(sep)
 
         if ignore_repeated_sep:
             line = [s for s in line if s != '']
 
-        # number of tags in col header defines number of variables!
         if len(line) != len(col_hdr):
             err_msg = f"n elem in line != n elem in col header ({os.path.basename(file)})"
             raise ValueError(err_msg)
@@ -79,6 +82,7 @@ def txt_2_dict_simple(file, sep=';', colhdr_ix=0, to_float=False,
                         result['data'][hdr_tag].append(None)
                 else:
                     result['data'][hdr_tag].append(line[i].strip())
+
     return result
 
 ###############################################################################
