@@ -6,6 +6,7 @@ Created on Mon Aug 20 11:23:26 2018
 """
 
 import numpy as np
+from numba import njit
 from scipy.interpolate import interp1d
 
 ###############################################################################
@@ -54,6 +55,90 @@ def filter_jumps_simple(v, max_delta, no_val=-1, add_v1=None, add_v2=None,
             result['add_v2'].append(add_v2[ix])
 
     return result
+
+
+###############################################################################
+
+
+def mask_repeated_elems(arr):
+    """
+    use numpy diff to mask repeated (adjacent) element in a numpy 1d array.
+    - for small array sizes (<10000), a looped solution with
+      numba njit is faster.
+    """
+    # n_el = arr.shape[0]
+    # mask = np.ones(arr.shape).astype(np.bool_)
+    # i = 0
+    # while i < n_el-1:
+    #     if arr[i] == arr[i+1]:
+    #         cur = arr[i]
+    #         for j in range(i+1, n_el):
+    #             i += 1
+    #             if cur == arr[j]:
+    #                 mask[j] = False
+    #             else:
+    #                 break
+    #     i += 1
+    mask = np.ones(arr.shape).astype(np.bool_)
+    mask[1:] = np.diff(arr).astype(np.bool_)
+    return mask
+
+@njit
+def mask_jumps(arr, thrsh, look_ahead, abs_delta=False):
+    """
+    check the elements of array "arr" if the delta between element and
+    following element(s) exceed a threshold "trsh". How many elements to
+    look ahead is defined by "look_ahead"
+    """
+    n_el = arr.shape[0]
+    mask = np.ones(arr.shape).astype(np.bool_)
+    i = 0
+    while i < n_el-1:
+        cur, nxt = arr[i], arr[i+1]
+        delta_0 = np.absolute(nxt-cur) if abs_delta else nxt-cur
+        if delta_0 > thrsh:
+            for value in arr[i+1:i+look_ahead+1]:
+                delta_1 = np.absolute(value-cur) if abs_delta else value-cur
+                if delta_1 > thrsh:
+                    mask[i+1] = False
+                    i += 1
+                else:
+                    break
+        i += 1
+    return mask
+
+def filter_jumps_v2(arr, thrsh, look_ahead,
+                    abs_delta=False,
+                    vmiss=np.nan,
+                    remove_repeated=False,
+                    interpol_jumps=False, interpol_kind='linear'):
+    """
+    wrapper around mask_jumps()
+    ! interpolation assumes equidistant spacing of the independent variable of
+      which arr depends !
+    """
+    if not isinstance(arr, np.ndarray):
+        raise ValueError("input array must be of class numpy ndarray.")
+    if arr.ndim > 1:
+        raise ValueError("input array must be numpy 1d array.")
+    if not isinstance(look_ahead, int):
+        raise ValueError("parameter look_ahead must be an integer.")
+    if look_ahead >= arr.shape[0] or look_ahead < 1:
+        raise ValueError(f"parameter look_ahead must be >=1 and <{arr.shape[0]}.")
+
+    result = arr.copy() # do not touch the input...
+    if not np.isnan(vmiss):
+        result[vmiss] = np.nan
+    if remove_repeated:
+        result[~mask_repeated_elems(result)] = np.nan
+    mask = mask_jumps(result, thrsh, look_ahead, abs_delta=abs_delta)
+    result[~mask] = np.nan
+    if interpol_jumps:
+        f_ip = interp1d(np.arange(0, result.shape[0])[mask], result[mask],
+                        kind=interpol_kind, fill_value='extrapolate')
+        result = f_ip(np.arange(0, result.shape[0]))
+        return (result, mask)
+    return (result, mask)
 
 
 ###############################################################################

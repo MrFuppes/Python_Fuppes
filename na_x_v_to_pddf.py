@@ -78,6 +78,6 @@ def get_pddf_from_na1001(file_path,
 
 if __name__ == '__main__':
     file_path = 'D:/PROGRAMMING/Python/Python_Testing/TESTDATA/NA_read/valid.txt'
-    file_path = 'D:/PROGRAMMING/Python/Python_Testing/TESTDATA/NA_read/WISE_01_20170831_GhOST_MS_V6.Ames'
+
     df = get_pddf_from_na1001(file_path, sep_com='\t')
     print(df.info())
