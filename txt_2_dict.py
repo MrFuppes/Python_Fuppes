@@ -54,7 +54,9 @@ def txt_2_dict_simple(file, sep=';', colhdr_ix=0, to_float=False,
         result['data'][element] = []
 
     # cut col header...
-    colhdr_ix -= 1 if ignore_colhdr else colhdr_ix
+    if ignore_colhdr:
+        colhdr_ix -= 1
+
     content = content[1+colhdr_ix:]
     for line in content:
         if preserve_empty: # only remove linefeed (if first field is empty)
