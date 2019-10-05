@@ -80,6 +80,5 @@ def get_pddf_from_na1001(file_path,
 
 if __name__ == '__main__':
     file = 'D:/PROGRAMMING/Python/Python_Testing/TESTDATA/NA_read/valid.txt'
-    # file = 'D:/KIT/Dataprocessing_Caribic/MS_files/output/MS_20171211_537_MUC_ICN_10s_V06.txt'
     df = get_pddf_from_na1001(file, add_datetime=True)
     print(df.info())
