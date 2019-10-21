@@ -8,6 +8,7 @@ import statistics as stat
 from cmath import rect, phase
 from math import radians, degrees, floor
 from datetime import datetime, date
+from copy import deepcopy
 
 import numpy as np
 import numba as nu
@@ -99,7 +100,78 @@ def mean_day_frac(dfr, use_numba=True):
 ###############################################################################
 
 
-def bin_time_10s_np(t, force_t_range=True):
+def mask_repeated(a, N):
+    """
+    given an array a that consists of sections of repeated elements, mask
+    those elements in a section that repeat more than N times
+    ex:
+        a = [1,1,1,1,2,2,2]
+        N = 3
+        --> mask = [True,True,True,False,True,True,True]
+    returns:
+        boolean mask
+
+    Q on SO:
+        https://stackoverflow.com/questions/58481528/numpy-1d-array-mask-elements-that-repeat-more-than-n-times
+    A on SO:
+        https://stackoverflow.com/a/58482894/10197418
+    """
+    mask = np.empty(a.size, np.bool_)
+    mask[:N] = True
+    np.not_equal(a[N:], a[:-N], out=mask[N:])
+    return mask
+
+
+###############################################################################
+
+
+def bin_time(t, binwidth, *, t_binned=None):
+    """
+    bin a time vector to an arbitrary bin width.
+    inputs:
+        t : time vector, increasing monotonically, np nd array, 1D.
+        binwidth: bin width in units of t, scalar.
+                  e.g. unit of t is secods --> binwidt = 30 == 30s bin width.
+        t_binned: supply a np 1D array to predefine bin centers.
+                  must match with binwidth.
+    """
+    if np.any(t_binned):
+        if not np.isclose(np.unique(np.diff(t_binned))[0], binwidth):
+            raise ValueError('Incorrect binwidth in t_binned.')
+    else:
+        n_bins = np.ceil((t[-1]-t[0]) / binwidth)
+        t_binned = (np.linspace(t[0], t[0]+n_bins*binwidth,
+                               num=n_bins, endpoint=False) + binwidth//2)
+    # determine bins:
+    bins = np.searchsorted(t_binned-binwidth/2, t, side='right')
+
+    # limit the maximum number of elements per bin:
+    max_n_per_bin = int(binwidth // np.median(np.diff(t)))
+    m = mask_repeated(bins, max_n_per_bin)
+
+    # do not allow preceeding bins (0):
+    m[bins == 0] = False
+
+    n_per_bin = np.unique(bins, return_counts=True)[1]
+    n_per_bin_masked = np.unique(bins[m], return_counts=True)[1]
+    cut_first = 0 in bins
+    cut_last = n_per_bin_masked[-1] != max_n_per_bin
+    if cut_last:
+        t_binned = t_binned[:-1]
+
+    return {'t_binned': t_binned,
+            'bins': bins,
+            'n_per_bin': n_per_bin,
+            'n_per_bin_masked': n_per_bin_masked,
+            'mask': m,
+            'cut_first': cut_first,
+            'cut_last': cut_last}
+
+
+###############################################################################
+
+
+def bin_time_10s(t, force_t_range=True):
     """
     numpy version of binning the time axis to 10s intervals around 5;
         lower boundary included, upper boundary excluded (0. <= 5. < 10.)
@@ -139,48 +211,62 @@ def bin_time_10s_np(t, force_t_range=True):
 
 
 ###############################################################################
+
+
 @nu.njit
 def get_npnanmean(v):
     return np.nanmean(v)
 
-def bin_v_stat_np(v, bin_info,
+def bin_y_of_t(v, bin_info,
                   vmiss=np.nan,
                   return_type='arit_mean',
                   use_numba=True):
     """
-    use 'bins' output of function "bin_time_10s_np" to bin a variable 'v'.
+    use 'bins' output of function "bin_time" or "bin_time_10s"
+        to bin a variable 'v' that depends on a variable t.
     """
     if not isinstance(v, np.ndarray):
         raise TypeError('Please pass np.ndarray to function.')
 
     if not any([v.dtype == np.dtype(t) for t in ('int16', 'int32', 'int64',
                                                  'float16', 'float32', 'float64')]):
-        raise TypeError('Pleas pass valid dtype, int or float.')
+        raise TypeError('Please pass valid dtype, int or float.')
 
-    if any([v.dtype == np.dtype(t) for t in ('int16', 'int32', 'int64')]):
-        v = np.ma.array(v) # use a masked array if type is int (NaN not supported)
-        v[v==vmiss] = np.ma.masked
+    if 'mask' in bin_info.keys():
+        mask = bin_info['mask']
     else:
-        v[v==vmiss] = np.nan
+        mask = np.ones(v.shape).astype(np.bool_)
+
+    _v = deepcopy(v)
+
+    if any([_v.dtype == np.dtype(t) for t in ('int16', 'int32', 'int64')]):
+        _v = np.ma.array(_v) # use a masked array if type is int (NaN not supported)
+        _v.mask = ~mask
+        _v[_v==vmiss] = np.ma.masked
+
+    else:
+        _v[_v==vmiss] = np.nan
+        _v[~mask] = np.nan
 
     v_binned = []
-    v_dtype = v.dtype
+    v_dtype = _v.dtype
+    vd_bins = bin_info['bins']
 
     if return_type == 'arit_mean':
         if use_numba:
-            v_binned = [get_npnanmean(v[bin_info['bins'] == bin_no]) for bin_no in np.unique(bin_info['bins'])]
+            v_binned = [get_npnanmean(_v[vd_bins == bin_no]) for bin_no in np.unique(vd_bins)]
         else:
-            v_binned = [np.nanmean(v[bin_info['bins'] == bin_no]) for bin_no in np.unique(bin_info['bins'])]
+            v_binned = [np.nanmean(_v[vd_bins == bin_no]) for bin_no in np.unique(vd_bins)]
     elif return_type == 'mean_day_frac':
         if use_numba:
-            v_binned = [mean_day_frac(v[bin_info['bins'] == bin_no]) for bin_no in np.unique(bin_info['bins'])]
+            v_binned = [mean_day_frac(_v[vd_bins == bin_no]) for bin_no in np.unique(vd_bins)]
         else:
-            v_binned = [mean_day_frac(v[bin_info['bins'] == bin_no], use_numba=False) for bin_no in np.unique(bin_info['bins'])]
+            v_binned = [mean_day_frac(_v[vd_bins == bin_no], use_numba=False) for bin_no in np.unique(vd_bins)]
     elif return_type == 'mean_angle':
         if use_numba:
-            v_binned = [mean_angle_numba(v[bin_info['bins'] == bin_no]) for bin_no in np.unique(bin_info['bins'])]
+            v_binned = [mean_angle_numba(_v[vd_bins == bin_no]) for bin_no in np.unique(vd_bins)]
         else:
-            v_binned = [mean_angle(v[bin_info['bins'] == bin_no]) for bin_no in np.unique(bin_info['bins'])]
+            v_binned = [mean_angle(_v[vd_bins == bin_no]) for bin_no in np.unique(vd_bins)]
 
 
     if any([v_dtype == np.dtype(t) for t in ('float16', 'float32', 'float64')]):
@@ -266,7 +352,6 @@ def bin_info_xvar(xvar, dx,
             [outfmt % element for element in bin_info['bins']])
 
     return bin_info
-
 
 
 ###############################################################################
@@ -412,7 +497,6 @@ def get_list_blmean(vector, bl_sz, edges='cut_both', output='float',
                 tmean = sum(map(datetime.timestamp, tlist))/bl_sz
                 tmean = datetime.fromtimestamp(tmean)
                 result.append(tmean)
-
         else:
             try:
                 vector = [float(element) for element in vector]
