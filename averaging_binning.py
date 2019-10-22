@@ -111,14 +111,35 @@ def mask_repeated(a, N):
     returns:
         boolean mask
 
-    Q on SO:
-        https://stackoverflow.com/questions/58481528/numpy-1d-array-mask-elements-that-repeat-more-than-n-times
-    A on SO:
+    on SO:
         https://stackoverflow.com/a/58482894/10197418
     """
     mask = np.empty(a.size, np.bool_)
     mask[:N] = True
     np.not_equal(a[N:], a[:-N], out=mask[N:])
+    return mask
+
+
+###############################################################################
+
+
+@nu.njit
+def mask_repeated_nb(arr, n):
+    """
+    numba version of mask_repeated().
+    on SO:
+        https://stackoverflow.com/a/58492855/10197418
+    """
+    mask = np.ones(arr.shape, np.bool_)
+    current = arr[0]
+    count = 0
+    for idx, item in enumerate(arr):
+        if item == current:
+            count += 1
+        else:
+            current = item
+            count = 1
+        mask[idx] = count <= n
     return mask
 
 
