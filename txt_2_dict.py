@@ -8,6 +8,27 @@ import os
 
 ###############################################################################
 
+def txt_2_dict_basic(file, delimiter, *, offset=0):
+    """
+    most basic csv reader (delimiter-separated text file).
+    faster than dict reader from csv package.
+    input:
+        file - path and filename (string or pathlib.Path)
+        delimiter - line separator (string)
+        offset - lines to skip at beginning (integer)
+    returns:
+        dict; keys = values from the first row, values = rest of the csv file.
+    """
+    with open(file) as csvfile:
+        data = csvfile.read().splitlines()
+        if offset > 0:
+            data = data[offset:]
+        for i, l in enumerate(data):
+            data[i] = [v for v in l.split(delimiter) if v]
+    return {item[0]: list(item[1:]) for item in zip(*data)}
+
+###############################################################################
+
 def txt_2_dict_simple(file, sep=';', colhdr_ix=0, to_float=False,
                       ignore_repeated_sep=False, ignore_colhdr=False,
                       keys_upper=False, preserve_empty=True,
@@ -36,7 +57,7 @@ def txt_2_dict_simple(file, sep=';', colhdr_ix=0, to_float=False,
     if not content:
         raise ValueError(f"no content in {file}")
 
-    result = {'file_hdr': [], 'data': {}}
+    result = {'file_hdr': [], 'data': {}, 'src': str(file)}
     if colhdr_ix > 0:
         result['file_hdr'] = [l.strip() for l in content[:colhdr_ix]]
 
@@ -58,7 +79,7 @@ def txt_2_dict_simple(file, sep=';', colhdr_ix=0, to_float=False,
         colhdr_ix -= 1
 
     content = content[1+colhdr_ix:]
-    for line in content:
+    for ix, line in enumerate(content):
         if preserve_empty: # only remove linefeed (if first field is empty)
             line = line[:-1] if '\n' in line else line
         else:
@@ -73,7 +94,7 @@ def txt_2_dict_simple(file, sep=';', colhdr_ix=0, to_float=False,
             line = [s for s in line if s != '']
 
         if len(line) != len(col_hdr):
-            err_msg = f"n elem in line != n elem in col header ({os.path.basename(file)})"
+            err_msg = f"n elem in line {ix} != n elem in col header ({file})"
             raise ValueError(err_msg)
         else:  # now the actual import to the dict...
             for i, hdr_tag in enumerate(col_hdr):
