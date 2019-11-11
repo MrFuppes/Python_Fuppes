@@ -48,6 +48,7 @@ def print_progressbar(iteration, total,
 #    # Update Progress Bar
 #    printProgressBar(i + 1, l, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
+
 ###############################################################################
 def get_DoY(date_ts):
     """
@@ -58,6 +59,7 @@ def get_DoY(date_ts):
     return (date(date_ts.year, date_ts.month, date_ts.day) -
             date(date_ts.year, 1, 1)).days
 
+
 ###############################################################################
 def get_EoT(date_ts):
     """
@@ -67,6 +69,7 @@ def get_EoT(date_ts):
     """
     B = (360/365)*(get_DoY(date_ts)-81)
     return 9.87 * math.sin(2.*B) - 7.53 * math.cos(B) - 1.5 * math.sin(B)
+
 
 ###############################################################################
 def get_LSTdayFrac(longitude, tz_offset, EoT, days_delta, time_delta):
