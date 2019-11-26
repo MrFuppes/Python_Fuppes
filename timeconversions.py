@@ -41,6 +41,17 @@ def timestring_2_mdns(timestring,
 ###############################################################################
 
 
+def timestring_2_utcts(timestring,
+                       tsfmt: str = "%Y-%m-%d %H:%M:%S.%f"):
+    """
+    convert a non-localized timestring to utc timestamp.
+    """
+    t = datetime.strptime(timestring, tsfmt)
+    return t.replace(tzinfo=timezone.utc).timestamp()
+
+###############################################################################
+
+
 def datetimeobj_2_mdns(dt_obj,
                        ix0_ix_t0: bool = False,
                        t0_set: tuple = False):
