@@ -145,26 +145,26 @@ def mdns_2_datetimeobj(mdns,
 
     date_zero = datetime(year=year, month=month, day=day,
                          tzinfo=timezone.utc)
-    pytimest = []
+    posix_ts = []
     for t in mdns:
         if t/86400 > 1:
             days_off = int(t/86400)
-            pytimest.append(date_zero + timedelta(days=days_off,
+            posix_ts.append(date_zero + timedelta(days=days_off,
                                                   seconds=t-86400*days_off))
         else:
-            pytimest.append(date_zero + timedelta(seconds=t))
+            posix_ts.append(date_zero + timedelta(seconds=t))
 
-    pytimest = [p.replace(tzinfo=timezone.utc) for p in pytimest]
+    posix_ts = [p.replace(tzinfo=timezone.utc) for p in posix_ts]
 
     if posix:
-        pytimest = [x.timestamp() for x in pytimest]
+        posix_ts = [x.timestamp() for x in posix_ts]
     elif str_fmt:
         if "%f" in str_fmt:
-            pytimest = [x.strftime(str_fmt)[:-3] for x in pytimest]
+            posix_ts = [x.strftime(str_fmt)[:-3] for x in posix_ts]
         else:
-            pytimest = [x.strftime(str_fmt) for x in pytimest]
+            posix_ts = [x.strftime(str_fmt) for x in posix_ts]
 
-    return pytimest[0] if ret_scalar else pytimest
+    return posix_ts[0] if ret_scalar else posix_ts
 
 
 ###############################################################################
