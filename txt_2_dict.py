@@ -4,7 +4,6 @@ Created on Fri Apr 20 11:17:42 2018
 
 @author: F. Obersteiner, florian\obersteiner\\kit\edu
 """
-import os
 
 ###############################################################################
 
@@ -19,7 +18,7 @@ def txt_2_dict_basic(file, delimiter, *, offset=0):
     returns:
         dict; keys = values from the first row, values = rest of the csv file.
     """
-    with open(file) as csvfile:
+    with open(file, 'r') as csvfile:
         data = csvfile.read().splitlines()
         if offset > 0:
             data = data[offset:]
