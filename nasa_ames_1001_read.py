@@ -11,12 +11,26 @@ import os
 from pathlib import Path as makePath
 from datetime import date
 
+
+def check_lt128(file):
+    """
+    check if all bytes of a file are less than decimal 128.
+    returns e.g. True for an ASCII encoded text file.
+    """
+    with open(file, 'rb') as f:
+        content = f.read()
+    return all(b<128 for b in content)
+
+
 def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
-                        auto_nncoml=True, strip_lines=True,
+                        auto_nncoml=True, 
+                        strip_lines=True,
                         remove_doubleseps=False,
                         vscale_vmiss_vertical=False,
-                        vmiss_to_None=False):
+                        vmiss_to_None=False,
+                        ensure_ascii=True):
     """
+    read nasa ames 1001 formatted text file. expected encoding is ASCII.
     args:
         file_path: path to file
     kwargs:
@@ -33,6 +47,7 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
                                      lines (1 entry per line) instead of in one
                                      line each (e.g. for DLR Bahamas files)
         vmiss_to_None: set True if missing values should be replaced with None.
+        ensure_ascii: check if all bytes in the specified file are < 128.
 
     returns:
         na_1001: dictionary with keys according to NASA AMES 1001 file
@@ -46,7 +61,11 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
     if not os.path.isfile(file_path): # check if file exists
         raise FileExistsError(str(file_path) + "\n    does not exist.")
     else:
-        with open(file_path, "r", encoding="UTF-8") as file_obj:
+        if ensure_ascii:
+            if not check_lt128(file_path):
+                raise TypeError(f"non-ASCII character found in {str(file_path)}")
+                
+        with open(file_path, "r", encoding="ascii") as file_obj:
             data = file_obj.readlines() # read file content to string list
 
         if strip_lines:
@@ -108,8 +127,8 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
         tmp = list(map(int, header[6].split()))
         assert len(tmp) == 6, f"invalid format {header[6]} (line 7)"
         # check for valid date in line 7 (yyyy mm dd)
-        date(*tmp[0:3]), date(*tmp[3:6])
-        na_1001['DATE'], na_1001['RDATE'] = tmp[0:3], tmp[3:6]
+        date(*tmp[:3]), date(*tmp[3:6])
+        na_1001['DATE'], na_1001['RDATE'] = tmp[:3], tmp[3:6]
 
         na_1001['DX'] = float(header[7]) # dx=0 means non-uniform independent variable.
         na_1001['XNAME'] = header[8].rsplit(sep=sep_com)
