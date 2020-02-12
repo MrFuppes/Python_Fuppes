@@ -57,10 +57,17 @@ def datetimeobj_2_mdns(dt_obj,
                        t0_set: tuple = False):
     """
     convert a python datetime object (or list of datetime objects) to seconds
-    after midnight. Year/month/day are not returned.
-    Action is independent of time zone (non-aware dt_obj).
-    ix0_ix_t0 (bool): first entry of dt_obj list contains the starting date.
-    t0_set (list of int): supply info about starting date as [year, month, day]
+    after midnight.
+
+    ix0_ix_t0 (bool):
+        first entry of dt_obj list/array defines start date.
+    
+    t0_set (tuple of int): 
+        custom start date given as (year, month, day).
+        
+    (!) possible pitfall:
+        if t0_set kwarg is passed to datetimeobj_2_mdns(), dt_obj must have a 
+        defined tzinfo (offset-aware datetime object).
     """
     if t0_set:
         t0 = datetime(t0_set[0], t0_set[1], t0_set[2])
@@ -79,6 +86,7 @@ def datetimeobj_2_mdns(dt_obj,
 
     if t0_set:
         return ((dt_obj - t0).total_seconds())
+    
     return ((dt_obj - dt_obj.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
 
 
