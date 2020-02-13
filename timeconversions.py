@@ -15,7 +15,7 @@ def timestring_2_mdns(timestring,
                       ymd: list = None):
     """
     convert a time string to seconds since midnight (float).
-    UTC prescribed. Cannot be used with time strings that contain tz info.
+    UTC prescribed. Cannot be used with time strings that contain tzinfo.
     ISO-8601 date string format: '%Y-%m-%dT%H:%M:%S%z'.
     ymd: define starting data as list of integers; [year, month, day]
     """
@@ -123,16 +123,17 @@ def posixts_2_mdns(posixts,
 
 
 def mdns_2_datetimeobj(mdns,
-                       year: int,
-                       month: int,
-                       day: int,
+                       ref_date,
                        posix: bool = False,
                        str_fmt: str = False):
     """
     convert seconds after midnight to python datetime object (single value or
         list) for a given year, month and day.
-    (!) UTC is assumed!
-    POSIX: if set to True, the corresponding POSIX timestamp is returned.
+    ref_date: 
+        reference date; tuple of int (year, month, day) or datetime object.
+        (!) if reference date is supplied, timezone is assumed to be UTC.
+    POSIX: 
+        if set to True, the corresponding POSIX timestamp is returned.
     STR_FMT: if provided, output is delivered as formatted string. POSIX must
         be False in that case, otherwise STR_FMT is overridden (evaluated last).
     """
@@ -146,19 +147,21 @@ def mdns_2_datetimeobj(mdns,
 
     if not isinstance(mdns[0], (float, np.float32, np.float64)):
         mdns = list(map(float, mdns))
-
-    date_zero = datetime(year=year, month=month, day=day,
-                         tzinfo=timezone.utc)
+        
+    if isinstance(ref_date, tuple):
+        ref_date = datetime(*ref_date, tzinfo=timezone.utc)
+    tz = ref_date.tzinfo
+    
     posix_ts = []
     for t in mdns:
         if t/86400 > 1:
             days_off = int(t/86400)
-            posix_ts.append(date_zero + timedelta(days=days_off,
+            posix_ts.append(ref_date + timedelta(days=days_off,
                                                   seconds=t-86400*days_off))
         else:
-            posix_ts.append(date_zero + timedelta(seconds=t))
+            posix_ts.append(ref_date + timedelta(seconds=t))
 
-    posix_ts = [p.replace(tzinfo=timezone.utc) for p in posix_ts]
+    posix_ts = [p.replace(tzinfo=tz) for p in posix_ts]
 
     if posix:
         posix_ts = [x.timestamp() for x in posix_ts]
