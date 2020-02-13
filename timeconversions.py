@@ -58,36 +58,32 @@ def datetimeobj_2_mdns(dt_obj,
     """
     convert a python datetime object (or list of datetime objects) to seconds
     after midnight.
-
+    
+    KWARGS -
     ix0_ix_t0 (bool):
         first entry of dt_obj list/array defines start date.
-    
     t0_set (tuple of int): 
         custom start date given as (year, month, day).
-        
-    (!) possible pitfall:
-        if t0_set kwarg is passed to datetimeobj_2_mdns(), dt_obj must have a 
-        defined tzinfo (offset-aware datetime object).
+    
     """
+    ret_scalar = False
+    if not isinstance(dt_obj, (list, np.ndarray)):
+        dt_obj, ret_scalar = [dt_obj], True
+                
     if t0_set:
-        t0 = datetime(t0_set[0], t0_set[1], t0_set[2])
-        t0 = t0.replace(tzinfo=timezone.utc)
+        t0 = datetime(t0_set[0], t0_set[1], t0_set[2], tzinfo=dt_obj[0].tzinfo)
     elif ix0_ix_t0:
         t0 = dt_obj[0]
 
-    if isinstance(dt_obj, (list, np.ndarray)):
-        if ix0_ix_t0 or t0_set:
-            result = ([(x-t0.replace(hour=0, minute=0, second=0, microsecond=0))
-                       .total_seconds() for x in dt_obj])
-        else:
-            result = ([(x-x.replace(hour=0, minute=0, second=0, microsecond=0))
-                       .total_seconds() for x in dt_obj])
-        return result
+    if ix0_ix_t0 or t0_set:
+        result = ([(x-t0.replace(hour=0, minute=0, second=0, microsecond=0))
+                   .total_seconds() for x in dt_obj])
+    else:
+        result = ([(x-x.replace(hour=0, minute=0, second=0, microsecond=0))
+                   .total_seconds() for x in dt_obj])
+        
+    return result[0] if ret_scalar else result
 
-    if t0_set:
-        return ((dt_obj - t0).total_seconds())
-    
-    return ((dt_obj - dt_obj.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
 
 
 ###############################################################################
