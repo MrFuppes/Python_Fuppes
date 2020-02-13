@@ -7,22 +7,52 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 
 
-###############################################################################
+### HELPERS ###################################################################
+
+
+def to_list(parm, is_scalar=False):
+    """
+    try to convert input "parm" to list type.
+    if "parm" is a scalar, its type will not be modified.
+    """
+    if isinstance(parm, str): # check this first: don't call list() on a string
+        parm, is_scalar = [parm], True
+    elif not isinstance(parm, (list, np.ndarray)):
+        try:
+            parm = list(parm) # call list() first in case parm is np.ndarray
+        except TypeError: # will e.g. raised if parm is a float
+            parm = [parm]
+        is_scalar = True
+    return parm, is_scalar
+
+
+### MAIN FUNCTIONS ############################################################
 
 
 def timestring_2_mdns(timestring,
                       tsfmt: str = "%Y-%m-%d %H:%M:%S.%f",
-                      ymd: list = None):
+                      ymd: tuple = None):
     """
-    convert a time string to seconds since midnight (float).
-    UTC prescribed. Cannot be used with time strings that contain tzinfo.
-    ISO-8601 date string format: '%Y-%m-%dT%H:%M:%S%z'.
-    ymd: define starting data as list of integers; [year, month, day]
+    convert a UTC timestring to seconds since midnight (float).
+    UTC tzinfo will be enforced - use only with non-localized timestrings.
+
+    Parameters
+    ----------
+    timestring : str, list of str or np.ndarray with dtype str.
+        timestamp given as string.
+    tsfmt : str, optional
+        timestring format. The default is "%Y-%m-%d %H:%M:%S.%f".
+    ymd : tuple, optional
+        starting date as tuple of integers; (year, month, day).
+        The default is None.
+
+    Returns
+    -------
+    float, scalar or list of float
+        seconds since midnight for the given timestring(s).
+
     """
-    ret_scalar = False
-    if not isinstance(timestring, (list, np.ndarray)):
-        timestring = [timestring]
-        ret_scalar = True
+    timestring, ret_scalar = to_list(timestring)
 
     dt = [datetime.strptime(s, tsfmt) for s in timestring]
     dt = [s.replace(tzinfo=timezone.utc) for s in dt]
@@ -49,6 +79,7 @@ def timestring_2_utcts(timestring,
     t = datetime.strptime(timestring, tsfmt)
     return t.replace(tzinfo=timezone.utc).timestamp()
 
+
 ###############################################################################
 
 
@@ -56,20 +87,18 @@ def datetimeobj_2_mdns(dt_obj,
                        ix0_ix_t0: bool = False,
                        t0_set: tuple = False):
     """
-    convert a python datetime object (or list of datetime objects) to seconds
+    convert a Python datetime object (or list of datetime objects) to seconds
     after midnight.
-    
+
     KWARGS -
     ix0_ix_t0 (bool):
         first entry of dt_obj list/array defines start date.
-    t0_set (tuple of int): 
+    t0_set (tuple of int):
         custom start date given as (year, month, day).
-    
+
     """
-    ret_scalar = False
-    if not isinstance(dt_obj, (list, np.ndarray)):
-        dt_obj, ret_scalar = [dt_obj], True
-                
+    dt_obj, ret_scalar = to_list(dt_obj)
+
     if t0_set:
         t0 = datetime(t0_set[0], t0_set[1], t0_set[2], tzinfo=dt_obj[0].tzinfo)
     elif ix0_ix_t0:
@@ -81,29 +110,22 @@ def datetimeobj_2_mdns(dt_obj,
     else:
         result = ([(x-x.replace(hour=0, minute=0, second=0, microsecond=0))
                    .total_seconds() for x in dt_obj])
-        
-    return result[0] if ret_scalar else result
 
+    return result[0] if ret_scalar else result
 
 
 ###############################################################################
 
 
 def posixts_2_mdns(posixts,
-                   ymd: list = None):
+                   ymd: tuple = None):
     """
     convert a python/POSIX timestamp (or list) to seconds
         after midnight. Year/month/day are not returned.
     ymd: define starting data as list of integers; [year, month, day]
     (!) input variable must be a UTC timestamp
     """
-    ret_scalar = False
-    if not isinstance(posixts, (list, np.ndarray)):
-        try:
-            posixts = list(posixts)
-        except TypeError:
-            posixts = [posixts]
-        ret_scalar = True
+    posixts, ret_scalar = to_list(posixts)
 
     if ymd:  # [yyyy,m,d] given, take that as starting point
         t0 = (datetime(year=ymd[0], month=ymd[1], day=ymd[2],
@@ -129,29 +151,23 @@ def mdns_2_datetimeobj(mdns,
     """
     convert seconds after midnight to python datetime object (single value or
         list) for a given year, month and day.
-    ref_date: 
+    ref_date:
         reference date; tuple of int (year, month, day) or datetime object.
         (!) if reference date is supplied, timezone is assumed to be UTC.
-    POSIX: 
+    POSIX:
         if set to True, the corresponding POSIX timestamp is returned.
     STR_FMT: if provided, output is delivered as formatted string. POSIX must
         be False in that case, otherwise STR_FMT is overridden (evaluated last).
     """
-    ret_scalar = False
-    if not isinstance(mdns, (list, np.ndarray)):
-        try:
-            mdns = list(mdns)
-        except TypeError:
-            mdns = [mdns]
-        ret_scalar = True
+    mdns, ret_scalar = to_list(mdns)
 
     if not isinstance(mdns[0], (float, np.float32, np.float64)):
         mdns = list(map(float, mdns))
-        
+
     if isinstance(ref_date, tuple):
         ref_date = datetime(*ref_date, tzinfo=timezone.utc)
     tz = ref_date.tzinfo
-    
+
     posix_ts = []
     for t in mdns:
         if t/86400 > 1:
