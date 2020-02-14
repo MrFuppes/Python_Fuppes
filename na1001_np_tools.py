@@ -7,7 +7,9 @@ Created on Wed May 29 08:35:12 2019
 
 import numpy as np
 
-def naDict2npndarr(naDict, selVnames=None,
+def naDict2npndarr(naDict,
+                   selVnames=None,
+                   return_pddf=False,
                    splitVname=';', splitIdx=0,
                    xdtype=np.float, vdtype=np.float,
                    vmiss=np.NaN):
@@ -21,6 +23,9 @@ def naDict2npndarr(naDict, selVnames=None,
         ...as returned by nasa_ames_1001_read.
     selVnames : list of string, optional
         VNAMEs to be converted. The default is None.
+    return_pddf : bool, optional
+        Set to True to make the function return a Pandas dataframe.
+        The default is False.
     splitVname : string, optional
         Where to split entries in VNAME. The default is ';'.
     splitIdx : int, optional
@@ -60,7 +65,7 @@ def naDict2npndarr(naDict, selVnames=None,
         if not isinstance(vmiss, bool):
             npDict[parm][np.where(npDict[parm] == float(naDict['VMISS'][ix]))] = vmiss
 
-    return npDict
+    return pd.DataFrame(npDict) if return_pddf else npDict
 
 if __name__ == '__main__':
     from nasa_ames_1001_read import nasa_ames_1001_read as na_r
