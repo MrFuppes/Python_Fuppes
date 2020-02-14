@@ -64,7 +64,8 @@ def naDict2npndarr(naDict,
         # boolean. Might be a bit confusing since vmiss=True would also result
         # in keeping the original values.
         if not isinstance(vmiss, bool):
-            npDict[parm][np.where(npDict[parm] == float(naDict['VMISS'][ix]))] = vmiss
+            npDict[parm][np.isclose(npDict[parm], float(naDict['VMISS'][ix]))] = vmiss
+            # npDict[parm][np.where(npDict[parm] == float(naDict['VMISS'][ix]))] = vmiss
 
     return pd.DataFrame(npDict) if return_pddf else npDict
 
