@@ -21,7 +21,8 @@ def map_dependent(xref, xcmp, vcmp, vmiss=np.nan):
         independent variable of vcmp.
     vcmp : np.ndarray, 1D
         dependent variable of xcmp.
-
+    vmiss : int or float
+        what should be inserted to specify missing values.
     Returns
     -------
     vmap : np.ndarray, 1D
@@ -33,7 +34,7 @@ def map_dependent(xref, xcmp, vcmp, vmiss=np.nan):
 
     # prepare output
     vmap = np.empty(xref.shape, dtype=vcmp.dtype)
-    # insert NaN where xref has NO corresponding element
+    # insert VMISS where xref has NO corresponding element
     vmap[~m] = vmiss
 
     # where corresponding elements exist, insert those from vcmp
