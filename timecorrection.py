@@ -17,7 +17,7 @@ def time_correction(t, t_ref, fitorder):
         point of the time vector.
     inputs:
         t - time vector, 1D np array, numeric type
-        t_ref - referece time vector, of same shape as t
+        t_ref - reference time vector, of same shape as t
         fitorder - order of the polynomial fit, integer
     returns:
         dict, holding

@@ -19,11 +19,11 @@ def get_plot_range(v, add_percent=5, v_min_lim=False, v_max_lim=False,
     ----------
     v : list or numpy 1d array
         dependent variable.
-    add_percent : nummeric type scalar value, optional
+    add_percent : numeric type scalar value, optional
         percent of the range of v that should be added to result. The default is 5.
-    v_min_lim : nummeric type scalar value, optional
+    v_min_lim : numeric type scalar value, optional
         minimum value for lower yrange limit. The default is False.
-    v_max_lim : nummeric type scalar value, optional
+    v_max_lim : numeric type scalar value, optional
         maximum value for upper yrange limit. The default is False.
     xrange : list, optional
         [lower_limit, upper_limit] of independent variable. The default is False.

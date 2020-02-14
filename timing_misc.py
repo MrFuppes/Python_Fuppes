@@ -76,7 +76,7 @@ def get_LSTdayFrac(longitude, tz_offset, EoT, days_delta, time_delta):
     """
     input:
         longitude: -180 to +180 degrees west to east, float
-        tz_offset: timezone offset in hours, float
+        tz_offset: time zone offset in hours, float
         EoT: equation of time for selected date, float
         days_delta: days since reference date, float
         time_delta: current time as days since reference date, float

@@ -15,12 +15,12 @@ def naDict2npndarr(naDict,
                    xdtype=np.float, vdtype=np.float,
                    vmiss=np.NaN):
     """
-    convert variables from a nasa ames 1001 dictionary stored as string(lists)
+    convert variables from a NASA AMES 1001 dictionary stored as string(lists)
     to numpy nd array type.
 
     Parameters
     ----------
-    naDict : nasa ames 1001 data in Python dict.
+    naDict : NASA AMES 1001 data in Python dict.
         ...as returned by nasa_ames_1001_read.
     selVnames : list of string, optional
         VNAMEs to be converted. The default is None.
@@ -41,7 +41,7 @@ def naDict2npndarr(naDict,
     Returns
     -------
     npDict : dict
-        dictionary holding numpy arrays for variables from the nasa ames file.
+        dictionary holding numpy arrays for variables from the NASA AMES file.
 
     """
     npDict = {naDict['XNAME'][0]: np.array(naDict['X'], dtype=xdtype)}

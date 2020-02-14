@@ -40,7 +40,7 @@ def txt_2_dict_simple(file, sep=';', colhdr_ix=0, to_float=False,
     colhdr_ix: row index of the column header.
     to_float: set "True" if all values are represented as floating point nbrs.
         otherwise, returned values are of type string.
-    ignore_repeated_sep: if set to True, repeated occurances of "sep" are
+    ignore_repeated_sep: if set to True, repeated occurrences of "sep" are
         ignored during extraction of elements from the file lines.
         Warning: empty fields must then be filled with a no-value indicator!
     keys_upper: convert key name (from column header) to upper-case

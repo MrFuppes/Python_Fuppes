@@ -30,17 +30,17 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
                         vmiss_to_None=False,
                         ensure_ascii=True):
     """
-    read nasa ames 1001 formatted text file. expected encoding is ASCII.
+    read NASA AMES 1001 formatted text file. expected encoding is ASCII.
     args:
         file_path: path to file
     kwargs:
         sep=" ": general string separator, e.g. space
-        sep_com=";": string separater used exclusively in comment block
+        sep_com=";": string separator used exclusively in comment block
         sep_data="\t": string separator used exclusively in data block
         auto_nncoml=True: automatically determine number of lines in normal
                           comment block
         strip_lines=True: remove whitespaces from all file lines
-        remove_doubleseps=False: remove repeated occurances of general
+        remove_doubleseps=False: remove repeated occurrences of general
                                  separator
         vscale_vmiss_vertical=False: set to True if VSCALE and VMISS parameters
                                      are arranged vertically over multiple
@@ -65,7 +65,7 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
             if not check_lt128(file_path):
                 raise TypeError(f"non-ASCII character found in {str(file_path)}")
 
-        with open(file_path, "r", encoding="ascii") as file_obj:
+        with open(file_path, "r", encoding="ASCII") as file_obj:
             data = file_obj.readlines() # read file content to string list
 
         if strip_lines:

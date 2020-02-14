@@ -13,7 +13,7 @@ from pysolar.solar import get_altitude
 ###############################################################################
 
 
-# define triogonometry with degrees
+# define trigonometry with degrees
 cos2 = lambda x: cos(radians(x))
 sin2 = lambda x: sin(radians(x))
 acos2 = lambda x: degrees(acos(x))

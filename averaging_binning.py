@@ -67,7 +67,7 @@ def mean_angle_numba(deg):
 def mean_day_frac(dfr, use_numba=True):
     """
     - use the mean_angle function to calculate a mean day fraction (0-1).
-      the conversion to angle is neccessary since day changes cannot be
+      the conversion to angle is necessary since day changes cannot be
       calculated as arithmetic mean.
     - dfr: day fraction, 0-1
     - if input parameter dfr contains NaN or is a numpy masked array, missing
@@ -152,8 +152,8 @@ def bin_time(t, binwidth, *, t_binned=None):
     inputs:
         t : time vector, increasing monotonically, np nd array, 1D.
         binwidth: bin width in units of t, scalar.
-                  e.g. unit of t is secods --> binwidt = 30 == 30s bin width.
-        t_binned: supply a np 1D array to predefine bin centers.
+                  e.g. unit of t is seconds --> binwidth = 30 == 30s bin width.
+        t_binned: supply a np 1D array to predefine bin centres.
                   must match with binwidth.
     """
     if np.any(t_binned):
@@ -318,7 +318,7 @@ def bin_info_xvar(xvar, dx,
         ending with ...5.0 only works if dx is 10.
     apply_round: (only if to_closest is set) round xmin/xmax before calculating
         the bins.
-    output='string', outfmt="%.2f": gives formatted ouput. float is default.
+    output='string', outfmt="%.2f": gives formatted output. float is default.
     """
     if not isinstance(xvar, list):
         raise ValueError("xvar must be a list")

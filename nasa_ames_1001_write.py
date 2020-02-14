@@ -14,7 +14,7 @@ def nasa_ames_1001_write(file_path, na_1001,
                          sep=" ", sep_com=";", sep_data="\t",
                          crlf="\n", overwrite=False):
     """
-    writes dictionary 'na_1001' to text file in nasa ames 1001 format.
+    writes dictionary 'na_1001' to text file in NASA AMES 1001 format.
     encoding is ASCII.
     for na_1001 specifications, see nasa_ames_1001_read.
     inputs:

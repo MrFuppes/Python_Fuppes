@@ -81,7 +81,7 @@ def datetimeobj_2_mdns(dt_obj,
     Parameters
     ----------
     dt_obj : datetime object or list/array of datetime objects
-        the datetime to be converted to seconds after midnigt.
+        the datetime to be converted to seconds after midnight.
     ix0_ix_t0 : bool, optional
         first entry of dt_obj list/array defines start date.
         The default is False.
@@ -123,7 +123,7 @@ def posixts_2_mdns(posixts,
     Parameters
     ----------
     posixts : float, list of float or np.ndarray with dtype float.
-        the posix timestamp to be converted to seconds after midnight.
+        the POSIX timestamp to be converted to seconds after midnight.
     ymd : tuple of int, optional
         define starting data as tuple of integers (year, month, day).
         The default is None, which means the reference date is the day of the

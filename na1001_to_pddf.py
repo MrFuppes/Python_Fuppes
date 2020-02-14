@@ -31,10 +31,10 @@ def get_pddf_from_na1001(file_path,
     sep_data : string, optional
         delimiter to use in data block. The default is "\t".
     sep_com : TYPE, optional
-        delimiter to use in commet block. The default is ";".
+        delimiter to use in comment block. The default is ";".
     vscale_vmiss_vertical : boolean, optional
         see description in nasa_ames_1001_read(). The default is False.
-    dtpye : numpy array data type, optional
+    dtype : numpy array data type, optional
         data type to use for conversion to DataFrame. The default is np.float64.
     add_datetime: boolean, optional
         derive a datetime object for each row. The default is False.

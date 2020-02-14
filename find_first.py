@@ -12,7 +12,7 @@ def find_fist_elem(arr, val, condition):
     """
     Find the first element in arr that gives (arr[ix] condition val) == True.
     Inputs:
-        arr: nummeric numpy 1d array or python list
+        arr: numeric numpy 1d array or python list
         val: scalar value
         condition: e.g. 'operator.ge' (operator package)
     Returns:
