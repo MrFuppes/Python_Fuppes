@@ -14,8 +14,8 @@ from datetime import date
 
 def check_lt128(file):
     """
-    check if all bytes of a file are less than decimal 128.
-    returns e.g. True for an ASCII encoded text file.
+    Check if all bytes of a file are less than decimal 128.
+    Returns True for an ASCII encoded text file.
     """
     with open(file, 'rb') as f:
         content = f.read()
@@ -23,7 +23,7 @@ def check_lt128(file):
 
 
 def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
-                        auto_nncoml=True, 
+                        auto_nncoml=True,
                         strip_lines=True,
                         remove_doubleseps=False,
                         vscale_vmiss_vertical=False,
@@ -64,7 +64,7 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
         if ensure_ascii:
             if not check_lt128(file_path):
                 raise TypeError(f"non-ASCII character found in {str(file_path)}")
-                
+
         with open(file_path, "r", encoding="ascii") as file_obj:
             data = file_obj.readlines() # read file content to string list
 

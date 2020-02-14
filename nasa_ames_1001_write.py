@@ -15,6 +15,7 @@ def nasa_ames_1001_write(file_path, na_1001,
                          crlf="\n", overwrite=False):
     """
     writes dictionary 'na_1001' to text file in nasa ames 1001 format.
+    encoding is ASCII.
     for na_1001 specifications, see nasa_ames_1001_read.
     inputs:
         file_path - file path, string or pathlib.Path
@@ -66,8 +67,8 @@ def nasa_ames_1001_write(file_path, na_1001,
         print("NA output: NLHEAD corrected!")
         na_1001['NLHEAD'] = nlhead_is
 
-    # begin the actual writing process...
-    with open(file_path, "w", encoding="UTF-8") as file_obj:
+    # begin the actual writing process
+    with open(file_path, "w", encoding="ascii") as file_obj:
         block = str(na_1001['NLHEAD']) + sep + str(na_1001['FFI']) + crlf
         file_obj.write(block)
 
@@ -86,12 +87,13 @@ def nasa_ames_1001_write(file_path, na_1001,
         block = str(na_1001['IVOL']) + sep + str(na_1001['NVOL']) + crlf
         file_obj.write(block)
 
-        block = str('%4.4u' % (na_1001['DATE'])[0])+sep+ \
-                str('%2.2u' % (na_1001['DATE'])[1])+sep+ \
-                str('%2.2u' % (na_1001['DATE'])[2])+sep+ \
-                str('%4.4u' % (na_1001['RDATE'])[0])+sep+ \
-                str('%2.2u' % (na_1001['RDATE'])[1])+sep+ \
-                str('%2.2u' % (na_1001['RDATE'])[2])+crlf # assume "yyyy m d" in list
+        # dates: assume "yyyy m d" in tuple
+        block = (str('%4.4u' % (na_1001['DATE'])[0]) + sep +
+                 str('%2.2u' % (na_1001['DATE'])[1]) + sep +
+                 str('%2.2u' % (na_1001['DATE'])[2]) + sep +
+                 str('%4.4u' % (na_1001['RDATE'])[0]) + sep +
+                 str('%2.2u' % (na_1001['RDATE'])[1]) + sep +
+                 str('%2.2u' % (na_1001['RDATE'])[2]) + crlf)
         file_obj.write(block)
 
         file_obj.write(f"{na_1001['DX']:g}{crlf}")

@@ -18,7 +18,7 @@ def get_pddf_from_na1001(file_path,
                          add_datetime=False):
     """
     WHAT?
-        wrapper for nasa_ames_1001_read() that just returns a pandas DataFrame
+        wrapper for nasa_ames_1001_read() that just returns a Pandas DataFrame
     ASSUMES:
         last line of NCOM contains names of parameters (delimited by sep_data)
 
@@ -45,7 +45,6 @@ def get_pddf_from_na1001(file_path,
         dataframe with a column for X and one for each parameter in V.
 
     """
-
     na_dct = na_r(file_path,
                   sep=sep, sep_data=sep_data, sep_com=sep_com,
                   vscale_vmiss_vertical=vscale_vmiss_vertical,
@@ -68,8 +67,7 @@ def get_pddf_from_na1001(file_path,
 
     if add_datetime:
         keys = ['DateTime'] + keys
-        dt = mdns2dt(na_dct['X'], year=na_dct['DATE'][0],
-                     month=na_dct['DATE'][1], day=na_dct['DATE'][2])
+        dt = mdns2dt(na_dct['X'], tuple(na_dct['DATE']))
         values = [dt] + values
 
     return pd.DataFrame.from_dict(dict(zip(keys, values)))
