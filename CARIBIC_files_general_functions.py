@@ -12,7 +12,7 @@ Info:
 import os
 import re
 from datetime import datetime
-from pathlib import Path as makePath
+from pathlib import Path
 
 ###############################################################################
 
@@ -55,7 +55,7 @@ def Flight_No_to_Flight_Dir(flight_no, *,
     search flights folder on Caribic server for folder with specified flight_no.
     returns None if no suited flight folder is found.
     """
-    flights_dir = makePath(flights_dir)
+    flights_dir = Path(flights_dir)
     for f in os.listdir(flights_dir):
         if f.startswith(f"Flight{flight_no:03d}_"):
             return flights_dir / f
@@ -70,7 +70,7 @@ def Flight_No_to_ModelData_Dir(flight_no, *,
     search model data folder on Caribic server for folder with specified flight_no.
     returns None of no suited model data folder is found.
     """
-    model_dir = makePath(model_dir)
+    model_dir = Path(model_dir)
     for f in os.listdir(model_dir):
         if f.endswith(f"_{flight_no:03d}"):
             return model_dir / f
@@ -114,9 +114,9 @@ def Find_NAfile(flight_no, prfx, *,
     """
     flight_no = int(flight_no)
 
-    flights_dir = makePath(flights_dir)
+    flights_dir = Path(flights_dir)
     if file_dir:
-        file_dir = makePath(file_dir)
+        file_dir = Path(file_dir)
     else:
         file_dir = Flight_No_to_Flight_Dir(flight_no, flights_dir=flights_dir)
 
@@ -198,7 +198,7 @@ def NAfilename_inc_vers(file, sep="_", add_suffix="", add_prefix="",
             else:
                 file_inc_v = file[:ix_vsep]+vers_str+file_ext
 
-        return file_inc_v
+        return Path(file_inc_v)
     return None
 
 
