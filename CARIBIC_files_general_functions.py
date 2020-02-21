@@ -84,7 +84,7 @@ def Find_NAfile(flight_no, prfx, *,
                 file_dir="",
                 binned_10s=False,
                 newest_only=True,
-                show_error=True):
+                show_error=False):
     """
     find NASA AMES file in flights directory (CARIBIC server folder structure).
 
