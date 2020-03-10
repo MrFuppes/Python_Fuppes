@@ -185,7 +185,7 @@ def nasa_ames_1001_read(file_path, sep=" ", sep_com=";", sep_data="\t",
 
         for ix, line in enumerate(data):
             l = line.rsplit(sep=sep_data)
-            assert len(l) == n_vars+1, f'invalid number of parameters in line {ix+nlhead}'
+            assert len(l) == n_vars+1, f'{file_path.name}: invalid number of parameters in line {ix+nlhead}'
             na_1001['X'].append(l[0])
             if vmiss_to_None:
                 for j in range(n_vars):
