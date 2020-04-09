@@ -13,7 +13,7 @@ def naDict2npndarr(naDict,
                    return_pddf=False,
                    splitVname=';', splitIdx=0,
                    xdtype=np.float, vdtype=np.float,
-                   vmiss=np.NaN):
+                   vmiss=np.NaN, create_x=True):
     """
     convert variables from a NASA AMES 1001 dictionary stored as string(lists)
     to numpy nd array type.
@@ -47,7 +47,8 @@ def naDict2npndarr(naDict,
     npDict = {naDict['XNAME'][0]: np.array(naDict['X'], dtype=xdtype)}
 
     # convenience: link npDict['x'] to npDict[naDict['XNAME'][0]]
-    npDict['x'] = npDict[naDict['XNAME'][0]]
+    if create_x:
+        npDict['x'] = npDict[naDict['XNAME'][0]]
 
     if not selVnames:
         selVnames = [n.split(splitVname)[0] for n in naDict['VNAME']]
