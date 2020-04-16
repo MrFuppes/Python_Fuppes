@@ -98,11 +98,7 @@ def nasa_ames_1001_write(file_path, na_1001,
 
         file_obj.write(f"{na_1001['DX']:g}{crlf}")
 
-        block = ""
-        for i in range(len(na_1001['XNAME'])): # expects list input
-            block = block + (na_1001['XNAME'])[i] + sep_com
-        block = block[0:-1] + crlf
-        file_obj.write(block)
+        file_obj.write(sep_com.join(na_1001['XNAME']) + crlf)
 
         n_vars = na_1001['NV'] # get number of variables
         block = str(n_vars) + crlf
@@ -114,7 +110,7 @@ def nasa_ames_1001_write(file_path, na_1001,
         if line.find("\n") > -1:
             line = line[0:-1]
         else:
-            line = line[0:-1]+crlf
+            line = line[0:-1] + crlf
         file_obj.write(line)
 
         line = ""
@@ -123,12 +119,12 @@ def nasa_ames_1001_write(file_path, na_1001,
         if line.find("\n") > -1:
             line = line[0:-1]
         else:
-            line = line[0:-1]+crlf
+            line = line[0:-1] + crlf
         file_obj.write(line)
 
         block = na_1001['VNAME']
         for i in range(n_vars):
-            file_obj.write(block[i]+crlf)
+            file_obj.write(block[i] + crlf)
 
         nscoml = na_1001['NSCOML'] # get number of special comment lines
         line = str(nscoml)+crlf
@@ -136,7 +132,7 @@ def nasa_ames_1001_write(file_path, na_1001,
 
         block = na_1001['SCOM']
         for i in range(nscoml):
-            file_obj.write(block[i]+crlf)
+            file_obj.write(block[i] + crlf)
 
         nncoml = na_1001['NNCOML'] # get number of normal comment lines
         line = str(nncoml)+crlf
@@ -144,17 +140,17 @@ def nasa_ames_1001_write(file_path, na_1001,
 
         block = na_1001['NCOM']
         for i in range(nncoml):
-            file_obj.write(block[i]+crlf)
+            file_obj.write(block[i] + crlf)
 
         nl_data = len(na_1001['X']) # lines of data to write
         for i in range(nl_data):
-            line = str((na_1001['X'])[i])+sep_data
+            line = str((na_1001['X'])[i]) + sep_data
             for j in range(n_vars):
-                line = line+str((na_1001['V'][j])[i])+sep_data
+                line = line + str((na_1001['V'][j])[i]) + sep_data
             if line.find("\n") > -1:
                 line = line[0:-1]
             else:
-                line = line[0:-1]+crlf
+                line = line[0:-1] + crlf
             file_obj.write(line)
 
     return write
