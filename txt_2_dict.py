@@ -100,8 +100,8 @@ def txt_2_dict_simple(file, sep=';', colhdr_ix=0, to_float=False,
                 if to_float:
                     try:
                         result['data'][hdr_tag].append(float(line[i]))
-                    except ValueError:
-                        result['data'][hdr_tag].append(None)
+                    except ValueError: # not convertible, just append value...
+                        result['data'][hdr_tag].append(line[i])
                 else:
                     result['data'][hdr_tag].append(line[i].strip())
 
