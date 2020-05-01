@@ -12,7 +12,8 @@ import os
 
 def nasa_ames_1001_write(file_path, na_1001,
                          sep=" ", sep_com=";", sep_data="\t",
-                         crlf="\n", overwrite=False):
+                         crlf="\n", overwrite=False,
+                         verbose=False):
     """
     writes dictionary 'na_1001' to text file in NASA AMES 1001 format.
     encoding is ASCII.
@@ -29,6 +30,7 @@ def nasa_ames_1001_write(file_path, na_1001,
     returns:
         (int) 0 -> failed, 1 -> normal write, 2 -> overwrite
     """
+    verboseprint = print if verbose else lambda *a, **k: None
     # check if directory exists, create if not.
     if not os.path.isdir(os.path.dirname(file_path)):
         os.mkdir(os.path.dirname(file_path))
@@ -36,6 +38,8 @@ def nasa_ames_1001_write(file_path, na_1001,
     # check if file exists, act according to overwrite keyword
     if os.path.isfile(file_path):
         if not overwrite:
+            verboseprint(f"write failed: {file_path} already exists.\n"
+                          "set overwrite keyword to overwrite.")
             return 0 # write failed / forbidden
         write = 2 # overwriting
     write = 1 # normal writing
@@ -44,27 +48,27 @@ def nasa_ames_1001_write(file_path, na_1001,
     n_vars_named = len(na_1001['VNAME'])
     n_vars_data = len(na_1001['V'])
     if n_vars_named != n_vars_data:
-        print("NA error: n vars in V and VNAME not equal, " +
-              f"{n_vars_data} vs. {n_vars_named}!")
+        verboseprint("NA error: n vars in V and VNAME not equal, "
+                     f"{n_vars_data} vs. {n_vars_named}!")
         return 0 # error case: undefined or missing variables in v
 
     if n_vars_named-na_1001['NV'] != 0:
-        print("NA output: NV corrected!")
+        verboseprint("NA output: NV corrected!")
         na_1001['NV'] = n_vars_named
 
     nscoml_is = len(na_1001['SCOM'])
     if (nscoml_is - na_1001['NSCOML']) != 0:
-        print("NA output: NSCOML corrected!")
+        verboseprint("NA output: NSCOML corrected!")
         na_1001['NSCOML'] = nscoml_is
 
     nncoml_is = len(na_1001['NCOM'])
     if (nncoml_is - na_1001['NNCOML']) != 0:
-        print("NA output: NNCOML corrected!")
+        verboseprint("NA output: NNCOML corrected!")
         na_1001['NNCOML'] = nncoml_is
 
     nlhead_is = 14 + n_vars_named + nscoml_is + nncoml_is
     if (nlhead_is - na_1001['NLHEAD']) != 0:
-        print("NA output: NLHEAD corrected!")
+        verboseprint("NA output: NLHEAD corrected!")
         na_1001['NLHEAD'] = nlhead_is
 
     # begin the actual writing process
